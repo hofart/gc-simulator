@@ -1,37 +1,8 @@
-import { GarbageCollector } from "./gc/GarbageCollector";
-import { MemoryObject } from "./gc/MemoryObject";
-
-const gc = new GarbageCollector();
-
-async function getApiData() {
-  try {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts');
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-
-    // alocando cada post como um MemoryObject no heap
-    const memoryObjcts = data.map((post: any, index: number) => new MemoryObject(index, []));
-
-    // aloca todos os objetos no heap
-    memoryObjcts.forEach((obj: MemoryObject) => gc.allocate(obj));
-
-    console.log('Heap após a alocação:', gc.getHeap());
-
-    // simulando a coleta de lixo dos objetos roots
-    const roots = [memoryObjcts[0], memoryObjcts[1]]; // roots são os dois primeiros objetos
-
-    // executa a coleta de lixo
-    gc.markAndSweep(roots);
-  } catch (error) {
-    console.error('There has been a problem with your fetch operation:', error);
-  }
-}
+import { getApiData } from './gc/store';
+import { handleApiData } from './listeners/store';
 
 getApiData();
+handleApiData();
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>Hello GC</div>
